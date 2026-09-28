@@ -1,0 +1,100 @@
+// Prisma Schema — Beyblade X Combo Simulator
+// Database: SQLite (dev) — swap to postgresql for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Parts ────────────────────────────────────────────────────────────────────
+
+model Blade {
+  id            String   @id
+  name          String
+  series        String   // BX | UX | CX
+  weight        Float
+  atk           Int
+  def           Int
+  sta           Int
+  inertiaFactor Float
+  desc          String
+  color         String
+  createdAt     DateTime @default(now())
+
+  // relations
+  savedCombos SavedCombo[]
+}
+
+model Ratchet {
+  id      String @id
+  name    String
+  height  Float
+  sides   Int
+  weight  Float
+  atk     Int
+  def     Int
+  sta     Int
+  bst     Int
+  desc    String
+
+  savedCombos SavedCombo[]
+}
+
+model Bit {
+  id           String @id
+  name         String
+  type         String // Attack | Defense | Stamina | Balance
+  weight       Float
+  speed        Int
+  atk          Int
+  def          Int
+  sta          Int
+  bst          Int
+  burstResist  Int
+  desc         String
+
+  savedCombos SavedCombo[]
+}
+
+// ─── Saved Combos ─────────────────────────────────────────────────────────────
+
+model SavedCombo {
+  id          String   @id @default(cuid())
+  name        String   @default("My Combo")
+  system      String   // BX | UX | CX
+  createdAt   DateTime @default(now())
+
+  bladeId     String
+  ratchetId   String
+  bitId       String
+
+  blade       Blade   @relation(fields: [bladeId],   references: [id])
+  ratchet     Ratchet @relation(fields: [ratchetId], references: [id])
+  bit         Bit     @relation(fields: [bitId],     references: [id])
+
+  // Physics snapshot at time of save
+  rpm             Float   @default(5500)
+  linearSpeed     Float   @default(3.5)
+  angleDeg        Float   @default(45)
+  totalKE         Float   @default(0)
+  impactForce     Float   @default(0)
+  angularMomentum Float   @default(0)
+  burstRiskLevel  String  @default("moderate")
+
+  notes       String  @default("")
+}
+
+// ─── Wiki Articles ────────────────────────────────────────────────────────────
+
+model WikiArticle {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String   // Markdown
+  category  String   // physics | parts | strategy | glossary
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}

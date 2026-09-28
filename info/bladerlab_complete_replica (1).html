@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <title>BladerLab - Build Your Strategy Before You Launch</title>
+    <meta name="description" content="A free, community-driven web platform for Beyblade enthusiasts. Explore Beyblade data, build strategic battle decks, simulate battles, and engage with a global community."/>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#F3F4F6',
+                        'gen-x-primary': '#00F0FF',
+                        'gen-x-accent': '#7000FF',
+                        'gen-metal-primary': '#FF9900',
+                        'gen-burst-primary': '#FF0055',
+                        'gen-original-primary': '#00FF66',
+                        'arena-void': '#070913',
+                        'soft-surface': '#111827',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --arena-void-0: #070913;
+            --soft-surface: #111827;
+            --border-default: rgba(255, 255, 255, 0.1);
+            --overlay-weak: rgba(255, 255, 255, 0.05);
+            --overlay-strong: rgba(15, 23, 42, 0.95);
+            --text-primary: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --gen-x-primary: #00F0FF;
+            --gen-metal-primary: #FF9900;
+            --gen-burst-primary: #FF0055;
+            --gen-original-primary: #00FF66;
+            --fx-crit: #FF3366;
+        }
+        body {
+            background-color: var(--arena-void-0);
+            color: var(--text-primary);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .soft-panel {
+            background: var(--soft-surface);
+            border: 1px solid var(--border-default);
+            border-radius: 1.25rem;
+        }
+        .soft-chip {
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 9999px;
+        }
+        .soft-btn {
+            border-radius: 9999px;
+            transition: all 0.2s ease;
+        }
+        .soft-btn--solidCool {
+            background: linear-gradient(135deg, #1557FF, #00F0FF);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(21, 87, 255, 0.4);
+        }
+        .soft-btn--solidCool:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black">
+
+    <header class="fixed top-0 left-0 right-0 z-50 bg-[#070913]/90 backdrop-blur-md border-b border-white/10">
+        <div class="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-2.5 cursor-pointer" onclick="switchTab('home')">
+                <div class="h-10 w-10 rounded-xl bg-cyan-500/20 flex items-center justify-center border border-cyan-500/40 text-cyan-400 font-black text-xl">BL</div>
+                <span class="font-black text-xl tracking-wider text-white">BLADER<span class="text-[#00F0FF]">LAB</span></span>
+            </div>
+            
+            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-gray-300">
+                <button onclick="switchTab('home')" class="nav-link hover:text-white transition-colors text-[#00F0FF]" data-target="home">Home</button>
+                <button onclick="switchTab('catalog')" class="nav-link hover:text-white transition-colors" data-target="catalog">Catalog</button>
+                <button onclick="switchTab('deck')" class="nav-link hover:text-white transition-colors" data-target="deck">Deck Builder</button>
+                <button onclick="switchTab('simulator')" class="nav-link hover:text-white transition-colors" data-target="simulator">Simulator</button>
+                <button onclick="switchTab('community')" class="nav-link hover:text-white transition-colors" data-target="community">Community</button>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button onclick="openNotice('Search functionality active. Use Catalog to search specific parts.')" class="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10 text-gray-300 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                </button>
+                <div class="px-4 py-2 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-xs font-black text-[#00F0FF] shadow-sm cursor-pointer" onclick="openNotice('BladerLab Account Profile: Active Session')">
+                    Account
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 pt-20 pb-16">
+
+        <div id="tab-home" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            
+            <div class="relative overflow-hidden soft-panel p-8 sm:p-12 bg-gradient-to-br from-cyan-950/60 via-gray-900 to-indigo-950/60 border-cyan-500/30 shadow-2xl">
+                <!-- Background decorative elements -->
+                <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-16 -bottom-16 w-64 h-64 rounded-full bg-pink-500/10 blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                    <div class="lg:col-span-7 space-y-6">
+                        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-[#00F0FF] text-xs font-black tracking-widest uppercase">
+                            <span class="w-2 h-2 rounded-full bg-[#00F0FF] animate-pulse"></span>
+                            Official X-Generation Strategy Hub
+                        </div>
+                        
+                        <h1 class="text-4xl sm:text-6xl font-black text-white tracking-tight leading-none">
+                            BUILD YOUR <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00F0FF] via-cyan-300 to-indigo-400">STRATEGY</span> BEFORE YOU LAUNCH
+                        </h1>
+                        
+                        <p class="text-gray-300 text-base sm:text-lg max-w-xl font-normal leading-relaxed">
+                            Explore comprehensive part specifications, simulate high-speed X-Dash matchups, and construct your ultimate 3-Bey tournament deck with community-driven insights.
+                        </p>
+
+                        <div class="flex flex-wrap items-center gap-4 pt-2">
+                            <button onclick="switchTab('simulator')" class="soft-btn soft-btn--solidCool px-8 py-3.5 text-base font-black flex items-center gap-2 shadow-[0_0_20px_rgba(0,240,255,0.4)]">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                Launch Simulation
+                            </button>
+                            <button onclick="switchTab('deck')" class="px-8 py-3.5 rounded-full bg-white/10 hover:bg-white/15 text-white font-black text-base border border-white/20 transition-all">
+                                Build Deck
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-5">
+                        <div class="soft-panel p-6 bg-black/40 backdrop-blur-md border-cyan-500/20 space-y-4">
+                            <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                                <span class="text-xs font-mono font-bold text-gray-400">LIVE ARENA TELEMETRY</span>
+                                <span class="soft-chip px-2.5 py-0.5 text-[11px] font-black text-[#00F0FF]">ACTIVE</span>
+                            </div>
+                            <div class="space-y-3 font-mono text-xs">
+                                <div class="flex justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-gray-400">Top Velocity:</span>
+                                    <span class="text-[#00F0FF] font-bold">142.6 km/h (X-Rail)</span>
+                                </div>
+                                <div class="flex justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-gray-400">Simulations Run:</span>
+                                    <span class="text-white font-bold">18,492 Today</span>
+                                </div>
+                                <div class="flex justify-between p-3 rounded-xl bg-white/5 border border-white/5">
+                                    <span class="text-gray-400">Meta Favorite:</span>
+                                    <span class="text-pink-400 font-bold">Dran Sword 3-60F</span>
+                                </div>
+                            </div>
+                            <button onclick="switchTab('catalog')" class="w-full py-3 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-[#00F0FF] text-xs font-black border border-cyan-500/30 transition-all text-center">
+                                Browse All 63 Catalog Entries →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-8 lg:grid-cols-12 lg:items-start">
+                
+                <!-- Left Quick Loops Panel -->
+                <div class="lg:col-span-5">
+                    <div class="soft-panel p-6 shadow-xl bg-gradient-to-br from-gray-900 to-gray-950">
+                        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+                            <div>
+                                <div class="text-[11px] font-black tracking-widest text-gray-400 uppercase">Local</div>
+                                <h2 class="mt-1 font-display text-xl font-black text-white">Get started</h2>
+                                <p class="mt-1 text-sm font-semibold text-gray-400">Try the core loop</p>
+                            </div>
+                            <span class="soft-chip px-2.5 py-1 text-[11px] font-black tracking-wider text-[#00F0FF]">3 steps</span>
+                        </div>
+                        
+                        <div class="mt-6 space-y-3">
+                            <button onclick="switchTab('catalog')" class="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 text-left group">
+                                <div class="h-8 w-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">1</div>
+                                <div class="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">Browse the catalog</div>
+                                <span class="ml-auto text-xs font-mono text-gray-500">/catalog</span>
+                            </button>
+                            <button onclick="switchTab('deck')" class="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 text-left group">
+                                <div class="h-8 w-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">2</div>
+                                <div class="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">Save your first deck</div>
+                                <span class="ml-auto text-xs font-mono text-gray-500">/deck</span>
+                            </button>
+                            <button onclick="switchTab('simulator')" class="w-full flex items-center gap-3 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/5 text-left group">
+                                <div class="h-8 w-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">3</div>
+                                <div class="text-sm font-bold text-white group-hover:text-[#00F0FF] transition-colors">Run your first matchup</div>
+                                <span class="ml-auto text-xs font-mono text-gray-500">/simulator</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Try Now Section -->
+                <div class="lg:col-span-7 space-y-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-white sm:text-3xl">Try now</h2>
+                        <p class="text-sm text-gray-400">Shortcuts the nav does not cover.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <button onclick="openNotice('Assemble X Tool: Custom combo assembler opened.')" class="p-4 soft-panel hover:border-[#00F0FF] transition-all text-left group">
+                            <div class="flex items-start gap-3">
+                                <div class="h-12 w-12 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/></svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-display text-lg font-black text-white group-hover:text-[#00F0FF] transition-colors">Assemble X</h3>
+                                    <p class="text-xs text-gray-400 mt-1">Build a part combo</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="switchTab('simulator')" class="p-4 soft-panel hover:border-orange-500 transition-all text-left group">
+                            <div class="flex items-start gap-3">
+                                <div class="h-12 w-12 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center border border-orange-500/30 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" x2="19" y1="19" y2="13"></line></svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-display text-lg font-black text-white group-hover:text-orange-400 transition-colors">Random matchup</h3>
+                                    <p class="text-xs text-gray-400 mt-1">Spin two catalog beys into battle</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="switchTab('deck')" class="p-4 soft-panel hover:border-pink-500 transition-all text-left group">
+                            <div class="flex items-start gap-3">
+                                <div class="h-12 w-12 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center border border-pink-500/30 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path></svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-display text-lg font-black text-white group-hover:text-pink-400 transition-colors">Build a deck</h3>
+                                    <p class="text-xs text-gray-400 mt-1">Save one to reopen it here</p>
+                                </div>
+                            </div>
+                        </button>
+
+                        <button onclick="openNotice('Collection initialized. All battle parts synced.')" class="p-4 soft-panel hover:border-emerald-500 transition-all text-left group">
+                            <div class="flex items-start gap-3">
+                                <div class="h-12 w-12 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z"/></svg>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <h3 class="font-display text-lg font-black text-white group-hover:text-emerald-400 transition-colors">Your collection</h3>
+                                    <p class="text-xs text-gray-400 mt-1">Battle tops and parts you own</p>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="soft-panel grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10 overflow-hidden text-center">
+                <div class="p-5">
+                    <div class="text-3xl font-black text-white font-mono">63</div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Catalog Entries</div>
+                </div>
+                <div class="p-5">
+                    <div class="text-3xl font-black text-[#00F0FF] font-mono">4</div>
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Generations (X, Burst, Metal, Original)</div>
+                </div>
+            </div>
+
+            <div class="soft-panel p-6 bg-gradient-to-br from-cyan-950/40 to-indigo-950/40 border-cyan-500/20 space-y-5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <button onclick="setGen('X')" id="btn-gen-X" class="soft-btn px-4 py-3 border border-cyan-500/60 bg-cyan-500/20 text-[#00F0FF] font-black text-sm flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)]">Beyblade X</button>
+                    <button onclick="setGen('Burst')" id="btn-gen-Burst" class="soft-btn px-4 py-3 border border-white/10 bg-white/5 text-gray-300 font-black text-sm flex items-center justify-center hover:bg-white/10 transition-colors">Burst</button>
+                    <button onclick="setGen('Metal')" id="btn-gen-Metal" class="soft-btn px-4 py-3 border border-white/10 bg-white/5 text-gray-300 font-black text-sm flex items-center justify-center hover:bg-white/10 transition-colors">Metal Fight</button>
+                    <button onclick="setGen('Original')" id="btn-gen-Original" class="soft-btn px-4 py-3 border border-white/10 bg-white/5 text-gray-300 font-black text-sm flex items-center justify-center hover:bg-white/10 transition-colors">Original</button>
+                </div>
+
+                <div class="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div id="gen-progress" class="h-full bg-[#00F0FF] transition-all duration-75" style="width: 0%"></div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4">
+                    <div>
+                        <div class="text-xs font-black tracking-widest text-[#00F0FF] uppercase">FEATURED GENERATION</div>
+                        <h3 id="gen-title" class="text-2xl sm:text-3xl font-black text-white mt-1">Beyblade X</h3>
+                        <p id="gen-desc" class="text-sm text-gray-300 mt-1 max-w-2xl">High-speed launches and aggressive contact. Built for quick reads and fast rematches.</p>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button onclick="switchTab('catalog')" class="soft-btn soft-btn--solidCool px-5 py-2.5 text-sm font-black flex-1 sm:flex-none">Browse Generation</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-catalog" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-white">Beyblade Catalog</h2>
+                    <p class="text-sm text-gray-400">Explore official parts, weights, and performance statistics.</p>
+                </div>
+                <div class="w-full sm:w-auto">
+                    <input type="text" id="catalog-search" placeholder="Search Beyblades..." oninput="filterCatalog()" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-[#00F0FF] w-full sm:w-72">
+                </div>
+            </div>
+
+            <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Populated via JavaScript -->
+            </div>
+        </div>
+
+        <div id="tab-deck" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-white">Strategic Deck Builder</h2>
+                    <p class="text-sm text-gray-400">Build your 3-Bey tournament deck for X-generation rules.</p>
+                </div>
+                <button onclick="saveDeck()" class="px-6 py-2.5 rounded-full bg-[#00F0FF] text-black font-black text-sm shadow-lg hover:bg-cyan-400 transition-colors">Save Deck</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="soft-panel p-5 space-y-3">
+                    <div class="text-xs font-mono text-[#00F0FF] font-bold uppercase">SLOT 1</div>
+                    <h3 class="font-bold text-white text-lg">Ace Attacker</h3>
+                    <select id="slot-1" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#00F0FF]">
+                        <option value="Dran Sword 3-60F">BX-01 Dran Sword 3-60F</option>
+                        <option value="Wizard Arrow 4-80B">BX-03 Wizard Arrow 4-80B</option>
+                        <option value="Hell's Chain 5-60HT">BX-21 Hell's Chain 5-60HT</option>
+                        <option value="Shark Edge 3-60LF">BX-20 Shark Edge 3-60LF</option>
+                    </select>
+                </div>
+                <div class="soft-panel p-5 space-y-3">
+                    <div class="text-xs font-mono text-[#00F0FF] font-bold uppercase">SLOT 2</div>
+                    <h3 class="font-bold text-white text-lg">Stamina Specialist</h3>
+                    <select id="slot-2" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#00F0FF]">
+                        <option value="Wizard Arrow 4-80B">BX-03 Wizard Arrow 4-80B</option>
+                        <option value="Knight Shield 3-80N">BX-04 Knight Shield 3-80N</option>
+                        <option value="Shark Edge 3-60LF">BX-20 Shark Edge 3-60LF</option>
+                        <option value="Dran Sword 3-60F">BX-01 Dran Sword 3-60F</option>
+                    </select>
+                </div>
+                <div class="soft-panel p-5 space-y-3">
+                    <div class="text-xs font-mono text-[#00F0FF] font-bold uppercase">SLOT 3</div>
+                    <h3 class="font-bold text-white text-lg">Balance / Defense</h3>
+                    <select id="slot-3" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm focus:outline-none focus:border-[#00F0FF]">
+                        <option value="Knight Shield 3-80N">BX-04 Knight Shield 3-80N</option>
+                        <option value="Hell's Chain 5-60HT">BX-21 Hell's Chain 5-60HT</option>
+                        <option value="Dran Sword 3-60F">BX-01 Dran Sword 3-60F</option>
+                        <option value="Wizard Arrow 4-80B">BX-03 Wizard Arrow 4-80B</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="deck-status" class="p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm hidden">
+                Deck successfully saved to local session storage! Ready for simulation.
+            </div>
+        </div>
+
+        <div id="tab-simulator" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h2 class="text-3xl font-black text-white">X-Extreme Battle Simulator</h2>
+                <p class="text-sm text-gray-400">Simulate high-speed physics, X-Dash acceleration, and X-Over finishes.</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto soft-panel p-6 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center space-y-2">
+                        <div class="text-xs text-[#00F0FF] font-bold">BEYBLADE 1</div>
+                        <div id="sim-bey1" class="font-black text-white text-base sm:text-lg">Dran Sword 3-60F</div>
+                    </div>
+                    <div class="p-4 rounded-xl bg-white/5 border border-white/10 text-center space-y-2">
+                        <div class="text-xs text-pink-500 font-bold">BEYBLADE 2</div>
+                        <div id="sim-bey2" class="font-black text-white text-base sm:text-lg">Wizard Arrow 4-80B</div>
+                    </div>
+                </div>
+
+                <div id="sim-arena" class="relative h-64 sm:h-80 rounded-2xl bg-[#03050a] border border-white/10 flex items-center justify-center overflow-hidden">
+                    <div class="absolute w-56 h-56 rounded-full border-2 border-dashed border-cyan-500/30 animate-spin" style="animation-duration: 15s;"></div>
+                    <div class="absolute w-36 h-36 rounded-full border border-pink-500/20 animate-spin" style="animation-duration: 10s; animation-direction: reverse;"></div>
+                    <div id="sim-status-text" class="text-sm sm:text-base font-bold text-cyan-300 z-10 bg-black/60 px-4 py-2 rounded-xl border border-cyan-500/30">Ready to Launch!</div>
+                </div>
+
+                <div class="flex justify-center">
+                    <button onclick="runSimulation()" class="px-8 py-3 rounded-full bg-gradient-to-r from-blue-600 to-[#00F0FF] text-white font-black text-base shadow-xl hover:opacity-90 transition-all">3, 2, 1... Let It Rip!</button>
+                </div>
+
+                <div id="sim-log" class="p-4 rounded-xl bg-black/50 font-mono text-xs text-gray-400 space-y-1 h-36 overflow-y-auto border border-white/5">
+                    <div>[System] Matchup initialized. Waiting for launcher trigger...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-community" class="tab-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 hidden space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h2 class="text-3xl font-black text-white">Community & Meta Discussions</h2>
+                <p class="text-sm text-gray-400">Connect with bladers worldwide, share tournament combos, and discuss rule sets.</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto space-y-4">
+                <div class="soft-panel p-5 space-y-3">
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span class="font-bold text-[#00F0FF]">@XtremeBlader99</span>
+                        <span>2 hours ago</span>
+                    </div>
+                    <h3 class="font-bold text-white text-base">Best custom combo for BX-01 Dran Sword in current meta?</h3>
+                    <p class="text-sm text-gray-300">I've been experimenting with 3-60 Flat vs Low Flat. The aggressive rush bit gives incredible X-Dash velocity on the rail!</p>
+                    <div class="flex gap-4 pt-2 text-xs text-gray-400 font-bold">
+                        <button onclick="openNotice('Upvoted discussion!')" class="hover:text-[#00F0FF]">▲ 42 Upvotes</button>
+                        <button onclick="openNotice('Opened comment thread.')" class="hover:text-white">💬 12 Comments</button>
+                    </div>
+                </div>
+
+                <div class="soft-panel p-5 space-y-3">
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span class="font-bold text-pink-400">@StaminaMaster</span>
+                        <span>Yesterday</span>
+                    </div>
+                    <h3 class="font-bold text-white text-base">Wizard Arrow stamina breakdown & weight balancing guide</h3>
+                    <p class="text-sm text-gray-300">Detailed testing on 67g weights shows amazing center stability against attack-type recoil. Highly recommended for deck slot 2.</p>
+                    <div class="flex gap-4 pt-2 text-xs text-gray-400 font-bold">
+                        <button onclick="openNotice('Upvoted discussion!')" class="hover:text-[#00F0FF]">▲ 89 Upvotes</button>
+                        <button onclick="openNotice('Opened comment thread.')" class="hover:text-white">💬 24 Comments</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="relative z-10 border-t border-white/10 bg-[#070913] py-8 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <div class="hidden md:flex items-center justify-between gap-4">
+                <div class="font-display font-black text-white text-xl">BLADER<span class="text-[#00F0FF]">LAB</span></div>
+                <div class="flex flex-wrap justify-center gap-6 text-gray-400 text-sm font-semibold">
+                    <button onclick="switchTab('home')" class="hover:text-white transition-colors">Home</button>
+                    <button onclick="switchTab('catalog')" class="hover:text-white transition-colors">Catalog</button>
+                    <button onclick="switchTab('deck')" class="hover:text-white transition-colors">Deck</button>
+                    <button onclick="switchTab('simulator')" class="hover:text-white transition-colors">Simulator</button>
+                    <button onclick="switchTab('community')" class="hover:text-white transition-colors">Community</button>
+                </div>
+                <div class="flex flex-wrap justify-end gap-6 text-gray-400 text-sm font-semibold">
+                    <a href="mailto:inquiry@bladerlab.com" class="hover:text-white transition-colors">Contact</a>
+                    <a href="https://buymeacoffee.com/bladerlab" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Support</a>
+                </div>
+            </div>
+
+            <div class="border-t border-white/10 pt-6 flex flex-col gap-3 text-center">
+                <p class="text-gray-400 text-xs">Questions or concerns? <a href="mailto:inquiry@bladerlab.com" class="font-semibold text-[#00F0FF] hover:underline">inquiry@bladerlab.com</a></p>
+                <div class="max-w-3xl mx-auto soft-panel p-3.5 bg-red-500/10 border-red-500/20 text-left sm:text-center">
+                    <p class="text-gray-200 text-xs leading-relaxed"><span class="font-bold text-red-400">⚠️ Fan Site Disclaimer:</span> BladerLab is an independent, non-commercial fan project and is not affiliated with, endorsed by, or sponsored by TAKARA-TOMY or Hasbro. "Beyblade" and all related names and marks are trademarks of TAKARA-TOMY. All rights reserved by their respective owners.</p>
+                </div>
+                <p class="text-gray-500 text-xs">© 2026 BladerLab - Built by Nelo for the community. 🇵🇭</p>
+            </div>
+        </div>
+    </footer>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-60 bg-[#070913]/95 backdrop-blur-md border-t border-white/10 h-16 md:hidden px-2 flex items-center justify-around">
+        <button onclick="switchTab('home')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-[#00F0FF]" data-target="home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <span class="text-[10px] font-bold mt-0.5">Home</span>
+        </button>
+        <button onclick="switchTab('catalog')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-white" data-target="catalog">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg>
+            <span class="text-[10px] font-bold mt-0.5">Catalog</span>
+        </button>
+        <button onclick="switchTab('deck')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-white" data-target="deck">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"></path></svg>
+            <span class="text-[10px] font-bold mt-0.5">Deck</span>
+        </button>
+        <button onclick="switchTab('simulator')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-white" data-target="simulator">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" x2="19" y1="19" y2="13"></line></svg>
+            <span class="text-[10px] font-bold mt-0.5">Simulator</span>
+        </button>
+        <button onclick="switchTab('community')" class="mobile-nav-btn flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-white" data-target="community">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span class="text-[10px] font-bold mt-0.5">Community</span>
+        </button>
+    </nav>
+
+    <!-- Custom Modal Dialog (No alert()) -->
+    <div id="custom-modal" class="fixed inset-0 z-70 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="soft-panel p-6 max-w-sm w-full space-y-4 text-center bg-gray-900 border-cyan-500/30">
+            <h3 class="font-bold text-white text-lg">BladerLab Notification</h3>
+            <p id="modal-text" class="text-sm text-gray-300">Notice text goes here.</p>
+            <button onclick="closeNotice()" class="w-full py-2.5 rounded-full bg-[#00F0FF] text-black font-bold text-sm hover:bg-cyan-400 transition-colors">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        const catalogData = [
+            { id: 'bx-01', name: 'Dran Sword 3-60F', gen: 'Beyblade X', type: 'Attack', weight: '65.2g', desc: 'High-speed aggressive contact blade built for instant knockout power.' },
+            { id: 'bx-03', name: 'Wizard Arrow 4-80B', gen: 'Beyblade X', type: 'Stamina', weight: '67.0g', desc: 'Aerodynamic profile designed for prolonged spin duration.' },
+            { id: 'bx-04', name: 'Knight Shield 3-80N', gen: 'Beyblade X', type: 'Defense', weight: '68.5g', desc: 'Heavy outer rim to deflect heavy hits and maintain center poise.' },
+            { id: 'bx-20', name: 'Shark Edge 3-60LF', gen: 'Beyblade X', type: 'Attack', weight: '66.1g', desc: 'Upward sloping blade design for devastating upper attacks.' },
+            { id: 'bx-21', name: 'Hell\'s Chain 5-60HT', gen: 'Beyblade X', type: 'Balance', weight: '67.4g', desc: 'Multi-contact points for versatile counter-attacking capabilities.' },
+            { id: 'bx-27', name: 'Wizard Rod 5-60T', gen: 'Beyblade X', type: 'Stamina', weight: '70.1g', desc: 'Heavy weight distribution pushing stamina boundaries in meta.' }
+        ];
+
+        const generations = {
+            'X': { title: 'Beyblade X', desc: 'High-speed launches and aggressive contact. Built for quick reads and fast rematches.', color: '#00F0FF' },
+            'Burst': { title: 'Beyblade Burst', desc: 'Dynamic burst gimmicks and layer customization. Strategic stamina vs attack matchups.', color: '#FF0055' },
+            'Metal': { title: 'Beyblade Metal Fight', desc: 'Heavy metal wheel clashes and stamina endurance tracks.', color: '#FF9900' },
+            'Original': { title: 'Beyblade Original', desc: 'Classic engine gear systems and ring battle nostalgia.', color: '#00FF66' }
+        };
+
+        let currentGen = 'X';
+        let progressVal = 0;
+        let rotInterval = null;
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            
+            // Update desktop nav highlights
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                if(btn.getAttribute('data-target') === tabId) {
+                    btn.classList.add('text-[#00F0FF]');
+                } else {
+                    btn.classList.remove('text-[#00F0FF]');
+                }
+            });
+
+            // Update mobile nav highlights
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                if(btn.getAttribute('data-target') === tabId) {
+                    btn.classList.add('text-[#00F0FF]');
+                    btn.classList.remove('text-gray-400');
+                } else {
+                    btn.classList.remove('text-[#00F0FF]');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setGen(genKey) {
+            currentGen = genKey;
+            progressVal = 0;
+            const gen = generations[genKey];
+            document.getElementById('gen-title').textContent = gen.title;
+            document.getElementById('gen-desc').textContent = gen.desc;
+            
+            ['X', 'Burst', 'Metal', 'Original'].forEach(k => {
+                const btn = document.getElementById('btn-gen-' + k);
+                if(k === genKey) {
+                    btn.className = 'soft-btn px-4 py-3 border border-cyan-500/60 bg-cyan-500/20 text-[#00F0FF] font-black text-sm flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.2)]';
+                } else {
+                    btn.className = 'soft-btn px-4 py-3 border border-white/10 bg-white/5 text-gray-300 font-black text-sm flex items-center justify-center hover:bg-white/10 transition-colors';
+                }
+            });
+        }
+
+        function renderCatalog(items) {
+            const grid = document.getElementById('catalog-grid');
+            grid.innerHTML = items.map(item => `
+                <div class="soft-panel p-5 space-y-3 hover:border-[#00F0FF] transition-all">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-mono font-bold text-[#00F0FF] uppercase">${item.gen}</span>
+                        <span class="soft-chip px-2.5 py-0.5 text-xs font-bold text-gray-300">${item.type}</span>
+                    </div>
+                    <h3 class="font-black text-white text-lg">${item.name}</h3>
+                    <p class="text-xs text-gray-400">${item.desc}</p>
+                    <div class="pt-2 border-t border-white/10 flex justify-between items-center text-xs text-gray-400 font-mono">
+                        <span>Weight: ${item.weight}</span>
+                        <button onclick="openNotice('Inspecting ${item.name} detailed stats & combo parts.')" class="text-[#00F0FF] font-bold hover:underline">Inspect →</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCatalog() {
+            const q = document.getElementById('catalog-search').value.toLowerCase();
+            const filtered = catalogData.filter(i => i.name.toLowerCase().includes(q) || i.type.toLowerCase().includes(q) || i.gen.toLowerCase().includes(q));
+            renderCatalog(filtered);
+        }
+
+        function saveDeck() {
+            const s1 = document.getElementById('slot-1').value;
+            const s2 = document.getElementById('slot-2').value;
+            const s3 = document.getElementById('slot-3').value;
+            localStorage.setItem('bladerlab_deck', JSON.stringify([s1, s2, s3]));
+            const status = document.getElementById('deck-status');
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 4000);
+        }
+
+        function runSimulation() {
+            const status = document.getElementById('sim-status-text');
+            const log = document.getElementById('sim-log');
+            status.textContent = 'Spinning... X-Dash engaged!';
+            log.innerHTML += `<div>[Simulation] 3, 2, 1... Let it rip! Both beys enter the extreme stadium.</div>`;
+            
+            setTimeout(() => {
+                log.innerHTML += `<div>[Simulation] Heavy impact at the X-Rail gear! Sparks fly across the stadium.</div>`;
+            }, 1000);
+
+            setTimeout(() => {
+                const winner = Math.random() > 0.5 ? 'Dran Sword 3-60F' : 'Wizard Arrow 4-80B';
+                status.textContent = `Finish! Winner: ${winner}`;
+                log.innerHTML += `<div class="text-[#00F0FF] font-bold">[Simulation] Extreme Finish! ${winner} wins by Over Finish (3 pts).</div>`;
+                log.scrollTop = log.scrollHeight;
+            }, 2500);
+        }
+
+        function openNotice(text) {
+            document.getElementById('modal-text').textContent = text;
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeNotice() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // Auto-rotation timer for generations
+        window.onload = function() {
+            renderCatalog(catalogData);
+            
+            const keys = ['X', 'Burst', 'Metal', 'Original'];
+            rotInterval = setInterval(() => {
+                progressVal += 2;
+                if(progressVal > 100) {
+                    progressVal = 0;
+                    const nextIdx = (keys.indexOf(currentGen) + 1) % keys.length;
+                    setGen(keys[nextIdx]);
+                }
+                document.getElementById('gen-progress').style.width = progressVal + '%';
+            }, 120);
+        };
+    </script>
+</body>
+</html>
