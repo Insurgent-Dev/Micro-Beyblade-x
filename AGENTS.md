@@ -104,6 +104,11 @@ pnpm prisma studio
 - **Images** — Use `next/image` with local assets in `public/`
 - **Wiki content** — Markdown files in `app/wiki/` or `WikiArticle` DB model
 
+## Known Issues (deferred — 2026-10-08)
+- **Blade images 404 (31/50):** code requests `/blade/<series>/<ShortName>.png` but files are named like `BX-01 Dran Sword 3-60F.png`; products.ts refs 6/11 missing; bits/ratchets OK
+- **Plan:** build admin/backend later for editing images + adding content (per พี่ฆัง)
+- **Domains:** short `https://micro-beyblade-x.vercel.app` (200, public) vs team URL `...-insurgent-devs-projects.vercel.app` (302 SSO wall for anonymous)
+
 ## Related Skills
 - `beyblade-project-overview` — Full project context (loaded)
 - `nextjs` — Next.js App Router expert guidance
