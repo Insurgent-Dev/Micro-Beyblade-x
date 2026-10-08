@@ -92,6 +92,12 @@ pnpm prisma studio
 - `DATABASE_URL` — `file:./dev.db` (local SQLite)
 - No external services required for local dev
 
+## Git / Remote (updated 2026-10-08)
+- **Remote:** `origin` → `https://github.com/Insurgent-Dev/Micro-Beyblade-x.git`
+- **Branch:** `main` tracks `origin/main`
+- **Status:** pushed & in sync (HEAD `3b3a396`), working tree clean
+- **Note:** This is NOT a BACKUP FAMILY repo — global AGENTS.md rule #4 does not apply; `Insurgent-Dev` remote is the project's own remote
+
 ## Important Notes
 - **No Python/Flask in this repo** (per global AGENTS.md rule #6)
 - **Vercel deployment** — Ensure `output: 'standalone'` not used (App Router default)

@@ -49,7 +49,7 @@ export function InfoBox({ color, title, children }: { color: string; title: stri
         violet: 'bg-violet-950/40 border-violet-800/50 text-violet-300',
     };
     return (
-        <div className={`border rounded-xl p-4 text-sm leading-relaxed ${styles.get(color, styles['blue'])}`}>
+        <div className={`border rounded-xl p-4 text-sm leading-relaxed ${styles[color] ?? styles['blue']}`}>
             <div className="font-bold mb-1">{title}</div>
             {children}
         </div>
