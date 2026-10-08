@@ -1,4 +1,5 @@
 import { PARTS_DB } from './parts-db';
+import type { BladePart, BitPart, RatchetPart } from './types';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -6,10 +7,10 @@ import * as path from 'path';
 const g = globalThis as unknown as {
     __productImageMap?: Map<string, string[]>;
     __productImageScanDone?: boolean;
-    __productDetailsCache?: Map<string, any>;
-    __bladeIndexMap?: Map<string, any>;
-    __ratchetIndexMap?: Map<string, any>;
-    __bitIndexMap?: Map<string, any>;
+    __productDetailsCache?: Map<string, ProductDetails>;
+    __bladeIndexMap?: Map<string, BladePart>;
+    __ratchetIndexMap?: Map<string, RatchetPart>;
+    __bitIndexMap?: Map<string, BitPart>;
 };
 
 function buildProductImageMap(): Map<string, string[]> {
@@ -42,8 +43,8 @@ function getProductImageMap(): Map<string, string[]> {
 }
 
 // ── Build Index Maps for faster lookups ────────────────────────────────
-function buildBladeIndexMap(): Map<string, any> {
-    const map = new Map<string, any>();
+function buildBladeIndexMap(): Map<string, BladePart> {
+    const map = new Map<string, BladePart>();
     const allBlades = [
         ...PARTS_DB.BX.blades,
         ...PARTS_DB.UX.blades,
@@ -57,8 +58,8 @@ function buildBladeIndexMap(): Map<string, any> {
     return map;
 }
 
-function buildRatchetIndexMap(): Map<string, any> {
-    const map = new Map<string, any>();
+function buildRatchetIndexMap(): Map<string, RatchetPart> {
+    const map = new Map<string, RatchetPart>();
     for (const ratchet of PARTS_DB.ratchets) {
         if (!map.has(ratchet.name)) {
             map.set(ratchet.name, ratchet);
@@ -67,8 +68,8 @@ function buildRatchetIndexMap(): Map<string, any> {
     return map;
 }
 
-function buildBitIndexMap(): Map<string, any> {
-    const map = new Map<string, any>();
+function buildBitIndexMap(): Map<string, BitPart> {
+    const map = new Map<string, BitPart>();
     for (const bit of PARTS_DB.bits) {
         if (!map.has(bit.id)) {
             map.set(bit.id, bit);
@@ -77,17 +78,17 @@ function buildBitIndexMap(): Map<string, any> {
     return map;
 }
 
-function getBladeIndexMap(): Map<string, any> {
+function getBladeIndexMap(): Map<string, BladePart> {
     if (!g.__bladeIndexMap) g.__bladeIndexMap = buildBladeIndexMap();
     return g.__bladeIndexMap;
 }
 
-function getRatchetIndexMap(): Map<string, any> {
+function getRatchetIndexMap(): Map<string, RatchetPart> {
     if (!g.__ratchetIndexMap) g.__ratchetIndexMap = buildRatchetIndexMap();
     return g.__ratchetIndexMap;
 }
 
-function getBitIndexMap(): Map<string, any> {
+function getBitIndexMap(): Map<string, BitPart> {
     if (!g.__bitIndexMap) g.__bitIndexMap = buildBitIndexMap();
     return g.__bitIndexMap;
 }
@@ -108,6 +109,7 @@ export interface Product {
     releaseDate: string;
     note?: string;
     slug: string;
+    image?: string;
 }
 
 type RawProduct = Omit<Product, 'slug'>;
@@ -117,8 +119,8 @@ function toProduct(section: string, index: number, p: RawProduct): Product {
 }
 
 export const BASIC_LINE: Product[] = [
-    { code: 'BX-00', name: 'Mammoth Tusk 2-80E', releaseDate: '27 ธ.ค. 2024' },
-    { code: 'BX-00', name: 'Samurai Steel 5-70GF', releaseDate: '15 มิ.ย. 2025' },
+    { code: 'BX-00', name: 'Mammoth Tusk 2-80E', releaseDate: '27 ธ.ค. 2024', image: '/blade/bx/Mammoth Tusk.png' },
+    { code: 'BX-00', name: 'Samurai Steel 5-70GF', releaseDate: '15 มิ.ย. 2025', image: '/blade/bx/Samurai Steel 5-70GF.jpeg' },
     { code: 'BX-01', name: 'Dran Sword 3-60F', releaseDate: '15 ก.ค. 2023', note: 'Starter' },
     { code: 'BX-02', name: 'Hells Scythe 4-60T', releaseDate: '15 ก.ค. 2023', note: 'Starter' },
     { code: 'BX-03', name: 'Wizard Arrow 4-80B', releaseDate: '15 ก.ค. 2023', note: 'Starter' },
@@ -210,18 +212,18 @@ export const SPECIAL_LINE: Product[] = [
 ].map((p, i) => toProduct('special', i, p));
 
 export const EVENT_LINE: Product[] = [
-    { code: 'BX-01', name: 'Dran Sword 3-60F (Starter)', releaseDate: '10 มิ.ย. 2023', note: 'CoroCoro Spirit Festival' },
-    { code: 'BX-02', name: 'Hells Scythe 4-60T (Starter)', releaseDate: '10 มิ.ย. 2023', note: 'CoroCoro Spirit Festival' },
-    { code: 'BX-00', name: 'Cobalt Drake 4-60F (Blue)', releaseDate: 'ก.ย. 2023', note: 'Rare Bey Get Battle' },
-    { code: 'BX-00', name: 'Hells Scythe 4-60T (Gold)', releaseDate: 'ก.ย. 2023', note: 'Rare Bey Get Battle' },
-    { code: 'BX-00', name: 'Knight Shield 3-80N (Gold)', releaseDate: '2023', note: 'Beyblade Battle Base Tournament Prize' },
-    { code: 'BX-23', name: 'Phoenix Wing 9-60GF (Starter)', releaseDate: '10 ธ.ค. 2023', note: "Toys R' Us" },
-    { code: 'BX-00', name: 'Phoenix Feather 3-60F', releaseDate: 'ม.ค. 2024', note: 'CoroCoro Comic' },
-    { code: 'BX-00', name: 'Hells Scythe 3-80F (SP X Bey)', releaseDate: '27 ม.ค. 2024', note: 'CoroCoro Comic' },
-    { code: 'BX-00', name: 'Dran Sword 3-60F (Sushiro Ver.)', releaseDate: '14 ก.พ. 2024', note: 'Sushiro Hong Kong Exclusive' },
-    { code: 'BX-00', name: 'Leon Claw 5-60P (Metal Coat: Gold)', releaseDate: '22 ก.พ. 2024', note: 'Limited' },
-    { code: 'BX-00', name: 'Shark Edge 5-60GF (Metal Coat: Blue)', releaseDate: '23 มี.ค. 2024', note: 'Limited' },
-    { code: 'UX-00', name: 'Wyvern Hover 2-80GN', releaseDate: '24 ต.ค. 2025', note: 'Event' },
+    { code: 'BX-01', name: 'Dran Sword 3-60F (Starter)', releaseDate: '10 มิ.ย. 2023', note: 'CoroCoro Spirit Festival', image: '/blade/bx/Dran Sword.png' },
+    { code: 'BX-02', name: 'Hells Scythe 4-60T (Starter)', releaseDate: '10 มิ.ย. 2023', note: 'CoroCoro Spirit Festival', image: '/blade/bx/Hells Scythe.png' },
+    { code: 'BX-00', name: 'Cobalt Drake 4-60F (Blue)', releaseDate: 'ก.ย. 2023', note: 'Rare Bey Get Battle', image: '/blade/bx/Cobalt Drake.png' },
+    { code: 'BX-00', name: 'Hells Scythe 4-60T (Gold)', releaseDate: 'ก.ย. 2023', note: 'Rare Bey Get Battle', image: '/blade/bx/Hells Scythe.png' },
+    { code: 'BX-00', name: 'Knight Shield 3-80N (Gold)', releaseDate: '2023', note: 'Beyblade Battle Base Tournament Prize', image: '/blade/bx/Knight Shield.png' },
+    { code: 'BX-23', name: 'Phoenix Wing 9-60GF (Starter)', releaseDate: '10 ธ.ค. 2023', note: "Toys R' Us", image: '/blade/bx/Phoenix Wing.png' },
+    { code: 'BX-00', name: 'Phoenix Feather 3-60F', releaseDate: 'ม.ค. 2024', note: 'CoroCoro Comic', image: '/blade/bx/Phoenix Feather.png' },
+    { code: 'BX-00', name: 'Hells Scythe 3-80F (SP X Bey)', releaseDate: '27 ม.ค. 2024', note: 'CoroCoro Comic', image: '/blade/bx/Hells Scythe.png' },
+    { code: 'BX-00', name: 'Dran Sword 3-60F (Sushiro Ver.)', releaseDate: '14 ก.พ. 2024', note: 'Sushiro Hong Kong Exclusive', image: '/blade/bx/Dran Sword.png' },
+    { code: 'BX-00', name: 'Leon Claw 5-60P (Metal Coat: Gold)', releaseDate: '22 ก.พ. 2024', note: 'Limited', image: '/blade/bx/Leon Claw.png' },
+    { code: 'BX-00', name: 'Shark Edge 5-60GF (Metal Coat: Blue)', releaseDate: '23 มี.ค. 2024', note: 'Limited', image: '/blade/bx/Shark Edge.png' },
+    { code: 'UX-00', name: 'Wyvern Hover 2-80GN', releaseDate: '24 ต.ค. 2025', note: 'Event', image: '/blade/bx/Wyvern Gale.png' },
     { code: 'UX-00', name: 'Orochi Cluster 6-60LF', releaseDate: '21 ม.ค. 2026', note: 'Event' },
 ].map((p, i) => toProduct('event', i, p));
 
@@ -290,12 +292,6 @@ export function getBladeImgPath(bladeName: string, productCode?: string): string
     return null;
 }
 
-function getSeriesFromCode(code: string): string {
-    if (code.startsWith('UX-')) return 'ux';
-    if (code.startsWith('CX-')) return 'cx';
-    return 'bx';
-}
-
 function findProductImageFile(product: Product): string | null {
     const map = getProductImageMap();
     const candidates = map.get(product.code);
@@ -332,6 +328,10 @@ function findProductImageFile(product: Product): string | null {
 }
 
 export function getProductImgPath(product: Product): string | null {
+    if (product.image) {
+        return product.image;
+    }
+
     const matchedFile = findProductImageFile(product);
     if (matchedFile) {
         return `/products/${matchedFile}`;
@@ -362,7 +362,7 @@ const RATCHET_BIT_RE = /([0-9A-Z]-\d{2})([A-Z]{1,3})/;
 export function getProductDetails(name: string): ProductDetails {
     // Check cache first
     if (!g.__productDetailsCache) {
-        g.__productDetailsCache = new Map<string, any>();
+        g.__productDetailsCache = new Map<string, ProductDetails>();
     }
     if (g.__productDetailsCache.has(name)) {
         return g.__productDetailsCache.get(name)!;
@@ -372,7 +372,7 @@ export function getProductDetails(name: string): ProductDetails {
     const ratchetIndexMap = getRatchetIndexMap();
     const bitIndexMap = getBitIndexMap();
 
-    let blade = null;
+    let blade: BladePart | null = null;
 
     // Exact match first (faster)
     for (const bladeName of bladeIndexMap.keys()) {
@@ -384,7 +384,7 @@ export function getProductDetails(name: string): ProductDetails {
 
     // Fallback: partial match with longest first
     if (!blade) {
-        let longestMatch: any = null;
+        let longestMatch: BladePart | null = null;
         let longestLength = 0;
         for (const bladeName of bladeIndexMap.keys()) {
             if (name.includes(bladeName) && bladeName.length > longestLength) {

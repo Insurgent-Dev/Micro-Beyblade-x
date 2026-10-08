@@ -71,13 +71,13 @@ export default function App() {
     };
 
     // ── Derived State ────────────────────────────────────────────────────────
-    const currentCombo: Combo = useMemo(() => ({
+    const currentCombo: Combo = {
         system,
         blade: selectedBlade,
         subblade: selectedSubBlade,
         ratchet: selectedRatchet,
         bit: selectedBit,
-    }), [system, selectedBlade, selectedSubBlade, selectedRatchet, selectedBit]);
+    };
 
     const comboStats: ComboStats = useMemo(() => {
         let totalWeight = selectedBlade.weight + selectedRatchet.weight + selectedBit.weight;

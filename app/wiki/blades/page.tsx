@@ -246,9 +246,6 @@ export default function BladesPage() {
             return 0;
         });
 
-    const withImg    = BLADES.filter(b => b.img).length;
-    const withoutImg = BLADES.filter(b => !b.img).length;
-
     return (
         <div className="min-h-screen bg-[#090d16] text-slate-100 font-sans">
 

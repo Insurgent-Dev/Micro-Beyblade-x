@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Zap, Wind, ShieldAlert, Clock, Save, CheckCircle, Info, ChevronDown, ChevronUp, FlaskConical } from 'lucide-react';
+import { Wind, ShieldAlert, Clock, Save, CheckCircle, Info, ChevronDown, ChevronUp, FlaskConical } from 'lucide-react';
 import type { Combo } from '../lib/types';
 import { calcPhysics } from '../lib/physics';
 
@@ -74,6 +74,7 @@ function SavedBadge({ name }: { name: string }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function PhysicsEvaluator({ currentCombo }: PhysicsEvaluatorProps) {
     const [rpm, setRpm]             = useState(5500);
+    const [timeElapsed, setTimeElapsed] = useState(0);
     const [linearSpeed, setLinear]  = useState(3.5);
     const [angleDeg, setAngle]      = useState(45);
     const [saving, setSaving]       = useState(false);
@@ -90,12 +91,14 @@ export default function PhysicsEvaluator({ currentCombo }: PhysicsEvaluatorProps
         totalWeightG:    totalWeight,
         inertiaFactor:   currentCombo.blade.inertiaFactor,
         rpm,
+        timeElapsedS:    timeElapsed,
         linearSpeedMs:   linearSpeed,
         angleDeg,
         ratchetSides:    currentCombo.ratchet.sides,
+        ratchetHeightMm: currentCombo.ratchet.height,
         bitBurstResist:  currentCombo.bit.burstResist,
         bitType:         currentCombo.bit.type,
-    }), [totalWeight, currentCombo, rpm, linearSpeed, angleDeg]);
+    }), [totalWeight, currentCombo, rpm, timeElapsed, linearSpeed, angleDeg]);
 
     const burstColor = result.burstRiskLevel === 'low'
         ? 'text-emerald-400' : result.burstRiskLevel === 'moderate'
@@ -156,17 +159,25 @@ export default function PhysicsEvaluator({ currentCombo }: PhysicsEvaluatorProps
                 </div>
 
                 {/* Inputs */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-slate-400">ความเร็วรอบชู๊ต (RPM)</label>
+                        <label className="text-xs font-semibold text-slate-400">รอบเริ่มต้น (Initial RPM)</label>
                         <input
                             type="number" value={rpm} min={500} max={10000} step={100}
                             onChange={e => setRpm(Number(e.target.value))}
                             className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-400 transition-all"
                         />
-                        <div className={`text-[11px] font-bold mt-0.5 ${result.rpmBand === 'low' ? 'text-amber-500' : result.rpmBand === 'optimal' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                            {result.rpmBandLabel}
-                        </div>
+                        <div className="text-[11px] text-slate-500">ตอนยิงจากลันเชอร์</div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-amber-400">เวลาที่ผ่านไป {timeElapsed}s</label>
+                        <input
+                            type="range" value={timeElapsed} min={0} max={60} step={1}
+                            onChange={e => setTimeElapsed(Number(e.target.value))}
+                            className="w-full accent-amber-500 mt-2"
+                        />
+                        <div className="text-[11px] text-slate-500">จำลองรอบตกตามเวลา</div>
                     </div>
 
                     <div className="space-y-1">
@@ -198,7 +209,13 @@ export default function PhysicsEvaluator({ currentCombo }: PhysicsEvaluatorProps
 
                 {/* RPM Meter */}
                 <div className="mt-4">
-                    <RpmMeter rpm={rpm} band={result.rpmBand} />
+                    <div className="flex justify-between items-end mb-1">
+                        <span className="text-sm font-bold text-white">Current RPM: {Math.round(result.currentRpm)}</span>
+                        <span className={`text-[11px] font-bold ${result.rpmBand === 'low' ? 'text-amber-500' : result.rpmBand === 'optimal' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            {result.rpmBandLabel}
+                        </span>
+                    </div>
+                    <RpmMeter rpm={result.currentRpm} band={result.rpmBand} />
                 </div>
 
                 {/* RPM Analysis */}
@@ -295,8 +312,10 @@ export default function PhysicsEvaluator({ currentCombo }: PhysicsEvaluatorProps
                         { label: 'E_lin (J)',         value: result.linearKE.toFixed(4) },
                         { label: 'τ (N·m)',           value: result.spinDownTorque.toFixed(5) },
                         { label: 'm (kg)',            value: (totalWeight / 1000).toFixed(4) },
-                        { label: 'Ratchet sides',     value: String(currentCombo.ratchet.sides) },
-                        { label: 'Bit burstResist',   value: String(currentCombo.bit.burstResist) },
+                        { label: 'Decay (RPM/s)',     value: result.decayRateRPM.toFixed(1) },
+                        { label: 'Stability Score',   value: result.stabilityScore.toFixed(1) },
+                        { label: 'Height (mm)',       value: String(currentCombo.ratchet.height) },
+                        { label: 'Burst Risk Score',  value: result.burstRiskScore.toFixed(2) },
                     ].map(item => (
                         <div key={item.label} className="bg-slate-900/60 p-2 rounded-lg border border-slate-800">
                             <div className="text-slate-500 text-[10px]">{item.label}</div>

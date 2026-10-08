@@ -17,8 +17,8 @@ export default function ArenaSimulator({ currentCombo }: ArenaSimulatorProps) {
     const beyState = useRef({
         x: 225,
         y: 180,
-        vx: (Math.random() - 0.5) * 4,
-        vy: (Math.random() - 0.5) * 4,
+        vx: 1.5,
+        vy: -1.5,
         angle: 0,
         stamina: 100,
         xdashes: 0,

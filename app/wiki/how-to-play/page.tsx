@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ChevronRight, Trophy, Zap, Shield, RotateCw, Users, BookOpen } from 'lucide-react';
+import { ChevronRight, Trophy, Zap, Shield, Users, BookOpen } from 'lucide-react';
 
 function Section({ id, icon, title, children }: {
     id: string; icon: React.ReactNode; title: string; children: React.ReactNode;

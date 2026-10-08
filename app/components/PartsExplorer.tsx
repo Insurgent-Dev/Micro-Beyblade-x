@@ -10,6 +10,8 @@ export interface PartsData {
     parts: Record<string, PartRecord[]>;
 }
 
+const EMPTY_PARTS: PartRecord[] = [];
+
 interface CategoryMeta {
     id: string;
     label: string;
@@ -96,7 +98,7 @@ export default function PartsExplorer({ data }: { data: PartsData }) {
     const [systemFilter, setSystemFilter] = useState<string>('ALL');
 
     const category = CATEGORIES.find(c => c.id === activeCategory)!;
-    const rows = data.parts[activeCategory] ?? [];
+    const rows = data.parts[activeCategory] ?? EMPTY_PARTS;
 
     const systems = useMemo(() => {
         const set = new Set<string>();
